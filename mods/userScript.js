@@ -9,14 +9,14 @@ import 'core-js/proposals/object-getownpropertydescriptors';
         div.style.position = 'fixed';
         div.style.top = '10px';
         div.style.left = '10px';
-        div.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+        div.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
         div.style.color = '#00ff00';
         div.style.fontFamily = 'monospace';
-        div.style.fontSize = '12px';
-        div.style.padding = '10px';
-        div.style.zIndex = '999999';
-        div.style.borderRadius = '5px';
-        div.style.border = '2px solid #00ff00';
+        div.style.fontSize = '14px'; // Slightly larger for TV visibility
+        div.style.padding = '15px';
+        div.style.zIndex = '9999999'; // Boost z-index
+        div.style.borderRadius = '8px';
+        div.style.border = '3px solid #00ff00';
         div.style.maxWidth = '80%';
         div.style.wordBreak = 'break-all';
         
@@ -38,17 +38,21 @@ import 'core-js/proposals/object-getownpropertydescriptors';
         }
 
         div.innerHTML = `
+            <b>[TizenTube UA Debug]</b><br><br>
             <b>Active UA:</b> ${navigator.userAgent}<br><br>
             <b>Storage UA:</b> ${localStorage.getItem('userAgent')}<br><br>
             <b>Condition Statuses:</b><br>${debugDetails}
         `;
         document.body.appendChild(div);
     };
-    if (document.body) {
-        showUA();
-    } else {
-        document.addEventListener('DOMContentLoaded', showUA);
-    }
+
+    // Poll for document.body to ensure it appends regardless of load timing
+    const interval = setInterval(() => {
+        if (document.body) {
+            clearInterval(interval);
+            showUA();
+        }
+    }, 100);
 })();
 
 import './translations/index.js'
