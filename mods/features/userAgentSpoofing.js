@@ -36,7 +36,14 @@ function generateUserAgent(profile) {
 
 ;(function() {
     if (document.querySelector('.content-container') && window.h5vcc && window.h5vcc.tizentube && window.h5vcc.tizentube.SetUserAgent) {
-        const ua = localStorage.getItem('userAgent');
+        let ua = localStorage.getItem('userAgent');
+        
+        // If the cached user agent is from the old Android profiles, clear it to force regeneration
+        if (ua && (ua.indexOf('Android') > -1 || ua.indexOf('Samsung') === -1)) {
+            localStorage.removeItem('userAgent');
+            ua = null;
+        }
+
         if (ua) {
             if (window.navigator.userAgent === ua) {
                 // Already set, do not reload
