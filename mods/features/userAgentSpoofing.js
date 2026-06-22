@@ -51,35 +51,72 @@ function generateUserAgent(profile) {
         timestamp: new Date().toLocaleTimeString()
     }));
 
-    if (!hasSetUserAgent) {
-        // h5vcc not available — script is running but can't spoof UA
-        return;
-    }
-
+    // Choose or generate the spoofed User Agent
     let ua = localStorage.getItem('userAgent');
-
-    // Clear stale Android-based UAs from older versions
     if (ua && (ua.indexOf('Android') > -1 || ua.indexOf('Samsung') === -1)) {
         localStorage.removeItem('userAgent');
         ua = null;
     }
-
-    if (ua) {
-        // UA already stored — check if it's been applied to the running context
-        if (window.navigator.userAgent === ua) {
-            // Already spoofed, nothing to do
-            return;
-        }
-        // Apply and reload so YouTube sees the spoofed UA from the start
-        window.h5vcc.tizentube.SetUserAgent(ua);
-        location.reload();
-        return;
+    if (!ua) {
+        const randomProfile = deviceProfiles[Math.floor(Math.random() * deviceProfiles.length)];
+        ua = generateUserAgent(randomProfile);
+        localStorage.setItem('userAgent', ua);
     }
 
-    // No stored UA — generate and save a new one
-    const randomProfile = deviceProfiles[Math.floor(Math.random() * deviceProfiles.length)];
-    const spoofedUserAgent = generateUserAgent(randomProfile);
-    localStorage.setItem('userAgent', spoofedUserAgent);
-    window.h5vcc.tizentube.SetUserAgent(spoofedUserAgent);
-    location.reload();
+    // 1. Force override navigator properties in JS context
+    try {
+        Object.defineProperty(navigator, 'userAgent', {
+            get: function () { return ua; },
+            configurable: true
+        });
+        Object.defineProperty(navigator, 'appVersion', {
+            get: function () { return ua; },
+            configurable: true
+        });
+    } catch (e) {
+        console.error("[TizenTube] Failed to override navigator properties:", e);
+    }
+
+    // 2. Force support/enable surround sound audio codecs (AC-3, EC-3, AC-4)
+    try {
+        const originalIsTypeSupported = window.MediaSource && window.MediaSource.isTypeSupported;
+        if (originalIsTypeSupported) {
+            window.MediaSource.isTypeSupported = function (mimeType) {
+                if (typeof mimeType === 'string' && (
+                    mimeType.includes('ec-3') || 
+                    mimeType.includes('ac-3') || 
+                    mimeType.includes('ac-4') || 
+                    mimeType.includes('mp4a.a9')
+                )) {
+                    return true;
+                }
+                return originalIsTypeSupported.call(this, mimeType);
+            };
+        }
+
+        const originalCanPlayType = window.HTMLMediaElement && window.HTMLMediaElement.prototype.canPlayType;
+        if (originalCanPlayType) {
+            window.HTMLMediaElement.prototype.canPlayType = function (mimeType) {
+                if (typeof mimeType === 'string' && (
+                    mimeType.includes('ec-3') || 
+                    mimeType.includes('ac-3') || 
+                    mimeType.includes('ac-4') || 
+                    mimeType.includes('mp4a.a9')
+                )) {
+                    return 'probably';
+                }
+                return originalCanPlayType.call(this, mimeType);
+            };
+        }
+    } catch (e) {
+        console.error("[TizenTube] Failed to mock surround sound codecs:", e);
+    }
+
+    // 3. If native user agent setting is available, apply it
+    if (hasSetUserAgent) {
+        if (window.navigator.userAgent !== ua) {
+            window.h5vcc.tizentube.SetUserAgent(ua);
+            location.reload();
+        }
+    }
 })();
