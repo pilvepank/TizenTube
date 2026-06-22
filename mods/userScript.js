@@ -3,56 +3,90 @@ import "whatwg-fetch";
 import 'core-js/proposals/object-getownpropertydescriptors';
 
 // Debug Overlay for User Agent validation
+// Only runs in the top-level frame, not iframes
 ;(function() {
-    const showUA = () => {
+    // Guard: only inject into the main page, not iframes
+    if (window !== window.top) return;
+
+    const OVERLAY_ID = 'tizentube-ua-debug-overlay';
+
+    function buildOverlay() {
+        // Remove existing to avoid duplicates
+        const existing = document.getElementById(OVERLAY_ID);
+        if (existing) existing.remove();
+
         const div = document.createElement('div');
-        div.style.position = 'fixed';
-        div.style.top = '10px';
-        div.style.left = '10px';
-        div.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
-        div.style.color = '#00ff00';
-        div.style.fontFamily = 'monospace';
-        div.style.fontSize = '14px'; // Slightly larger for TV visibility
-        div.style.padding = '15px';
-        div.style.zIndex = '9999999'; // Boost z-index
-        div.style.borderRadius = '8px';
-        div.style.border = '3px solid #00ff00';
-        div.style.maxWidth = '80%';
-        div.style.wordBreak = 'break-all';
-        
-        let debugDetails = 'No details logged yet';
+        div.id = OVERLAY_ID;
+        // Use cssText with !important to override YouTube TV styles
+        div.style.cssText = [
+            'position: fixed !important',
+            'top: 10px !important',
+            'left: 10px !important',
+            'background-color: #000000 !important',
+            'color: #00ff00 !important',
+            'font-family: monospace !important',
+            'font-size: 24px !important',
+            'padding: 20px !important',
+            'z-index: 2147483647 !important',
+            'border: 4px solid #00ff00 !important',
+            'max-width: 900px !important',
+            'word-break: break-all !important',
+            'display: block !important',
+            'visibility: visible !important',
+            'opacity: 1 !important',
+            'pointer-events: none !important'
+        ].join(';');
+
+        let debugDetails = '';
         try {
             const rawDebug = localStorage.getItem('userAgentDebug');
             if (rawDebug) {
                 const parsed = JSON.parse(rawDebug);
-                debugDetails = `
-                    DOM Ready (.content-container): ${parsed.hasContentContainer}<br>
-                    window.h5vcc present: ${parsed.hasH5vcc}<br>
-                    tizentube present: ${parsed.hasTizenTube}<br>
-                    SetUserAgent present: ${parsed.hasSetUserAgent}<br>
-                    Last eval time: ${parsed.timestamp}
-                `;
+                debugDetails = 'h5vcc:' + parsed.hasH5vcc
+                    + ' | tt:' + parsed.hasTizenTube
+                    + ' | setUA:' + parsed.hasSetUserAgent
+                    + ' | t:' + parsed.timestamp;
+            } else {
+                debugDetails = 'No debug data in localStorage';
             }
         } catch (e) {
-            debugDetails = 'Error parsing logs: ' + e.message;
+            debugDetails = 'Parse err: ' + e.message;
         }
 
-        div.innerHTML = `
-            <b>[TizenTube UA Debug]</b><br><br>
-            <b>Active UA:</b> ${navigator.userAgent}<br><br>
-            <b>Storage UA:</b> ${localStorage.getItem('userAgent')}<br><br>
-            <b>Condition Statuses:</b><br>${debugDetails}
-        `;
-        document.body.appendChild(div);
-    };
+        const storedUA = localStorage.getItem('userAgent') || 'none';
+        const liveUA = navigator.userAgent;
+        const uaMatch = (storedUA !== 'none' && liveUA.indexOf('Cobalt') !== -1) ? 'YES-SPOOFED' : 'NO';
 
-    // Poll for document.body to ensure it appends regardless of load timing
-    const interval = setInterval(() => {
-        if (document.body) {
-            clearInterval(interval);
-            showUA();
+        div.textContent = '[TTDebug] Spoof:' + uaMatch
+            + ' | UA:' + liveUA.substring(0, 80)
+            + ' | ' + debugDetails;
+
+        return div;
+    }
+
+    function injectOverlay() {
+        const root = document.documentElement || document.body;
+        if (!root) return;
+        const div = buildOverlay();
+        root.appendChild(div);
+    }
+
+    // Re-inject overlay if YouTube's SPA removes it
+    function keepAlive() {
+        if (!document.getElementById(OVERLAY_ID)) {
+            injectOverlay();
         }
-    }, 100);
+    }
+
+    // Inject immediately once html element exists
+    const bootInterval = setInterval(() => {
+        if (document.documentElement) {
+            clearInterval(bootInterval);
+            injectOverlay();
+            // Keep re-checking every 2s in case SPA blows it away
+            setInterval(keepAlive, 2000);
+        }
+    }, 50);
 })();
 
 import './translations/index.js'
