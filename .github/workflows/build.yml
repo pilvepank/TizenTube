@@ -21,20 +21,23 @@ jobs:
           node-version: '22'
 
       - name: Install mods dependencies
-        run: npm install
+        run: npm install --prefer-offline
         working-directory: mods
 
       - name: Build mods (userScript.js)
-        run: npm run build
+        run: ./node_modules/.bin/rollup -c rollup.config.js
         working-directory: mods
 
       - name: Install service dependencies
-        run: npm install
+        run: npm install --prefer-offline
         working-directory: service
 
       - name: Build service (service.js)
-        run: npx rollup -c rollup.config.js
+        run: ./node_modules/.bin/rollup -c rollup.config.js
         working-directory: service
+
+      - name: List dist output
+        run: ls -la dist/
 
       - name: Commit built dist files
         run: |
