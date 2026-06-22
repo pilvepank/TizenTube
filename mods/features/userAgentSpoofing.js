@@ -34,21 +34,23 @@ function generateUserAgent(profile) {
     return `Mozilla/5.0 (${profile.architecture}; ${profile.os}) Cobalt/${cobaltVersion} (unlike Gecko) ${v8Version} ${profile.rasterizer} Starboard/${starboardVersion}, ${profile.manufacturer}_${profile.deviceType}_${profile.chipsetModel}_${profile.modelYear}/${profile.firmwareVersion} (${profile.brand}, ${profile.model}) ${auxField}`;
 }
 
-if (document.querySelector('.content-container') && window.h5vcc && window.h5vcc.tizentube && window.h5vcc.tizentube.SetUserAgent) {
-    const ua = localStorage.getItem('userAgent');
-    if (ua) {
-        if (window.navigator.userAgent === ua) {
-            // Already set, do not reload
+;(function() {
+    if (document.querySelector('.content-container') && window.h5vcc && window.h5vcc.tizentube && window.h5vcc.tizentube.SetUserAgent) {
+        const ua = localStorage.getItem('userAgent');
+        if (ua) {
+            if (window.navigator.userAgent === ua) {
+                // Already set, do not reload
+                return;
+            }
+            window.h5vcc.tizentube.SetUserAgent(ua);
+            location.reload();
             return;
         }
-        window.h5vcc.tizentube.SetUserAgent(ua);
-        location.reload();
-        return;
-    }
 
-    const randomProfile = deviceProfiles[Math.floor(Math.random() * deviceProfiles.length)];
-    const spoofedUserAgent = generateUserAgent(randomProfile);
-    localStorage.setItem('userAgent', spoofedUserAgent);
-    window.h5vcc.tizentube.SetUserAgent(spoofedUserAgent);
-    location.reload();
-}
+        const randomProfile = deviceProfiles[Math.floor(Math.random() * deviceProfiles.length)];
+        const spoofedUserAgent = generateUserAgent(randomProfile);
+        localStorage.setItem('userAgent', spoofedUserAgent);
+        window.h5vcc.tizentube.SetUserAgent(spoofedUserAgent);
+        location.reload();
+    }
+})();
