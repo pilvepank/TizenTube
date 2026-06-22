@@ -18,14 +18,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install mods dependencies
         run: npm install
         working-directory: mods
 
       - name: Build mods (userScript.js)
-        run: npx rollup -c rollup.config.js
+        run: npm run build
         working-directory: mods
 
       - name: Install service dependencies
