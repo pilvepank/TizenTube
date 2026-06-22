@@ -19,10 +19,28 @@ import 'core-js/proposals/object-getownpropertydescriptors';
         div.style.border = '2px solid #00ff00';
         div.style.maxWidth = '80%';
         div.style.wordBreak = 'break-all';
+        
+        let debugDetails = 'No details logged yet';
+        try {
+            const rawDebug = localStorage.getItem('userAgentDebug');
+            if (rawDebug) {
+                const parsed = JSON.parse(rawDebug);
+                debugDetails = `
+                    DOM Ready (.content-container): ${parsed.hasContentContainer}<br>
+                    window.h5vcc present: ${parsed.hasH5vcc}<br>
+                    tizentube present: ${parsed.hasTizenTube}<br>
+                    SetUserAgent present: ${parsed.hasSetUserAgent}<br>
+                    Last eval time: ${parsed.timestamp}
+                `;
+            }
+        } catch (e) {
+            debugDetails = 'Error parsing logs: ' + e.message;
+        }
+
         div.innerHTML = `
             <b>Active UA:</b> ${navigator.userAgent}<br><br>
             <b>Storage UA:</b> ${localStorage.getItem('userAgent')}<br><br>
-            <b>h5vcc status:</b> ${!!(window.h5vcc && window.h5vcc.tizentube && window.h5vcc.tizentube.SetUserAgent)}
+            <b>Condition Statuses:</b><br>${debugDetails}
         `;
         document.body.appendChild(div);
     };

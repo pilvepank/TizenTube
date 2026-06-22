@@ -35,7 +35,21 @@ function generateUserAgent(profile) {
 }
 
 ;(function() {
-    if (document.querySelector('.content-container') && window.h5vcc && window.h5vcc.tizentube && window.h5vcc.tizentube.SetUserAgent) {
+    const hasContentContainer = !!document.querySelector('.content-container');
+    const hasH5vcc = !!window.h5vcc;
+    const hasTizenTube = !!(window.h5vcc && window.h5vcc.tizentube);
+    const hasSetUserAgent = !!(window.h5vcc && window.h5vcc.tizentube && window.h5vcc.tizentube.SetUserAgent);
+    
+    // Save state to localStorage for UI debugger to read
+    localStorage.setItem('userAgentDebug', JSON.stringify({
+        hasContentContainer,
+        hasH5vcc,
+        hasTizenTube,
+        hasSetUserAgent,
+        timestamp: new Date().toLocaleTimeString()
+    }));
+
+    if (hasContentContainer && hasSetUserAgent) {
         let ua = localStorage.getItem('userAgent');
         
         // If the cached user agent is from the old Android profiles, clear it to force regeneration
