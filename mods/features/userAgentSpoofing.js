@@ -1,5 +1,29 @@
 const deviceProfiles = [
     {
+        architecture: 'LINUX',
+        os: 'Tizen/7.0',
+        rasterizer: 'gles',
+        manufacturer: 'Samsung',
+        deviceType: 'TV',
+        chipsetModel: 'NIKEM2',
+        modelYear: 2022,
+        firmwareVersion: 'T-NKM2AKUC-2111.1',
+        brand: 'Samsung',
+        model: 'QN55Q80AAFXZA'
+    },
+    {
+        architecture: 'LINUX',
+        os: 'Tizen/8.0',
+        rasterizer: 'gles',
+        manufacturer: 'Samsung',
+        deviceType: 'TV',
+        chipsetModel: 'KANTM',
+        modelYear: 2023,
+        firmwareVersion: 'T-KTMAKUC-3112.2',
+        brand: 'Samsung',
+        model: 'QN65QN90CAF'
+    },
+    {
         architecture: 'Linux arm64-v8a',
         os: 'Android 10',
         rasterizer: 'gles',
@@ -22,30 +46,6 @@ const deviceProfiles = [
         firmwareVersion: 'UTTC.250917.004',
         brand: 'google',
         model: 'Chromecast'
-    },
-    {
-        architecture: 'Linux armeabi-v7a',
-        os: 'Android 12',
-        rasterizer: 'gles',
-        manufacturer: 'TCL',
-        deviceType: 'ATV',
-        chipsetModel: 'merak',
-        modelYear: 2023,
-        firmwareVersion: 'STT2.221228.001',
-        brand: 'TCL',
-        model: 'Smart TV Pro'
-    },
-    {
-        architecture: 'Linux armeabi-v7a',
-        os: 'Android 7.1.2',
-        rasterizer: 'gles',
-        manufacturer: 'Amazon',
-        deviceType: 'ATV',
-        chipsetModel: 'mt8695',
-        modelYear: 0,
-        firmwareVersion: 'NS6294',
-        brand: 'Amazon',
-        model: 'AFTMM'
     }
 ]
 
@@ -61,8 +61,13 @@ function generateUserAgent(profile) {
 if (document.querySelector('.content-container') && window.h5vcc && window.h5vcc.tizentube && window.h5vcc.tizentube.SetUserAgent) {
     const ua = localStorage.getItem('userAgent');
     if (ua) {
+        if (window.navigator.userAgent === ua) {
+            // Already set, do not reload
+            return;
+        }
         window.h5vcc.tizentube.SetUserAgent(ua);
         location.reload();
+        return;
     }
 
     const randomProfile = deviceProfiles[Math.floor(Math.random() * deviceProfiles.length)];
