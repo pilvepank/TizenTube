@@ -22,30 +22,6 @@ const deviceProfiles = [
         firmwareVersion: 'T-KTMAKUC-3112.2',
         brand: 'Samsung',
         model: 'QN65QN90CAF'
-    },
-    {
-        architecture: 'Linux arm64-v8a',
-        os: 'Android 10',
-        rasterizer: 'gles',
-        manufacturer: 'Sony',
-        deviceType: 'ATV',
-        chipsetModel: 'sdm845',
-        modelYear: 13140765,
-        firmwareVersion: '52.1.C.0.268',
-        brand: 'KDDI',
-        model: 'SOV38'
-    },
-    {
-        architecture: 'Linux armeabi-v7a',
-        os: 'Android 14',
-        rasterizer: 'gles',
-        manufacturer: 'Google',
-        deviceType: 'ATV',
-        chipsetModel: 'sabrina',
-        modelYear: 2020,
-        firmwareVersion: 'UTTC.250917.004',
-        brand: 'google',
-        model: 'Chromecast'
     }
 ]
 
