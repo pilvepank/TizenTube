@@ -11,6 +11,7 @@
   "author": "Reis Can, YouTube WebOs contributors",
   "license": "GPL-3.0-only",
   "dependencies": {
+    "@babel/core": "^7.22.9",
     "@babel/preset-env": "^7.22.9",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-terser": "^0.4.3",
